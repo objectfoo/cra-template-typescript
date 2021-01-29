@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Container } from "../../components/layout";
+import { Container } from "components/layout";
 
 export const Main: React.FC = () => {
 	return (
