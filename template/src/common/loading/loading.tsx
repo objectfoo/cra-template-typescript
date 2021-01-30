@@ -20,20 +20,12 @@ export const Loading: React.FC<LoadingProps> = (props) => {
 	const processState = useObservable(service.State);
 	const errorMessage = useObservable(service.LoadErrorMessage);
 	const a11yMessage = useObservable(service.A11yMessage);
-	const content = React.useMemo(() => {
-		switch(processState) {
-			case LoadingState.Loading:
-				return <LoadingSpinner  />;
-			case LoadingState.Loaded:
-				return RenderChildren();
-			case LoadingState.Error:
-				return <LoadingError errorMessage={errorMessage} RenderError={RenderError} />;
-			default:
-				throw new Error(`Unknown ProcessState: ${processState}`);
-		}
-	}, [RenderChildren, processState, errorMessage, RenderError])
 
-	return <AnnouncePolite text={a11yMessage}>{content}</AnnouncePolite>;
+	return (
+		<AnnouncePolite text={a11yMessage}>
+			<ProcessLoadingState {...{ RenderChildren, RenderError, processState, errorMessage }} />
+		</AnnouncePolite>
+	);
 };
 
 function useService(isLoading: boolean, errorMessage: string): LoadingService {
@@ -41,6 +33,24 @@ function useService(isLoading: boolean, errorMessage: string): LoadingService {
 	service.SyncDomState(isLoading, errorMessage);
 	return service;
 }
+
+const ProcessLoadingState: React.FC<{
+	processState: LoadingState,
+	errorMessage: string,
+	RenderChildren: () => JSX.Element,
+	RenderError?: () => JSX.Element
+}> = ({ processState, errorMessage, RenderChildren, RenderError }) => {
+	switch(processState) {
+		case LoadingState.Loading:
+			return <LoadingSpinner  />;
+		case LoadingState.Loaded:
+			return RenderChildren();
+		case LoadingState.Error:
+			return <LoadingError errorMessage={errorMessage} RenderError={RenderError} />;
+		default:
+			throw new Error(`Unknown ProcessState: ${processState}`);
+	}
+};
 
 const LoadingError: React.FC<{
 	errorMessage: string;
